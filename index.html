@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="utf-8">
+    <head>
+      <title>Home</title>
+	   <meta name="viewport" content="width-device-width, intital-scale=">
+        <meta http-equiv="Accept-CH" content="Device-Memory">
+	   <link rel="stylesheet" href="csslinks/navbarstyle.css">
+        <link rel="stylesheet" href="csslinks/loginstyle.css">
+        <link rel="stylesheet" href="csslinks/div.css">
+
+	   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/regression/2.0.1/regression.min.js"></script> 
+	   <link href="https://netdna.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"/>
+	   <!--Google Charts API-->
+	   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> 
+	   <!--JQuery-->
+	   <script src="./jslinks/jquery-3.6.1.js"></script>
+	   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	   <script src="jslinks/functions.js"></script>
+	   <!--D3 and Plotly Libraries-->
+	   <script src='https://cdn.plot.ly/plotly-2.14.0.min.js'></script>
+	   <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+	   <!--Danfo.JS-->
+	   <script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.js"></script>
+	   <!--CSS Start-->
+	   <style>
+		body	
+		{
+			   background-color:black;
+		}
+           nav
+           {
+             background-position: center;
+             background-position-y: 2ch;
+		   background-color: black;
+             background-size: 100ch;
+           }
+          .navbar navbar-inverse .nav navbar-nav li a
+           {
+             color: rgb(65, 220, 0);
+           }
+         
+        </style>
+    </head>
+
+    <body>
+	<!--Navigation Bar-->
+	<div class="navbar">
+
+		<!--File Dropdown-->
+		<div class="dropdown">
+			<button class="dropbtn">File
+				<i class="fa fa-caret-down"></i>
+			</button>
+			<div class="dropdown-content" id='filedrop'>
+				<input type='file' id="fileUpload" onchange='callphp()' name="file" accept=".csv" style="display:none">
+				<a href="#" onclick="$('#fileUpload').click()" id="loadCSVbtn">Load CSV File</a>
+				<a href='#' id='logon' onclick='openForm()'>Login to DB</a>
+				<a href='#' id='logout' onclick='logout()' style='display:none'>Logout DB</a>
+
+				<a href='#' class='loaddata' id="2020data" onclick="resetSlider(); loadData(2020); setSlider();" style="display:none">Load 2020 Data</a>
+				<a href='#' class='loaddata' id="2021data" onclick="resetSlider(); loadData(2021); setSlider();" style="display:none">Load 2021 Data</a>
+				<a href='#'  id="mail" onclick="mailFormOpen();" style="display:none">Send Preferences</a>
+				<a href='#' onclick='closeTab()' id='exit' >Exit</a>
+			</div>
+		</div>
+		
+		<!--View Dropdown-->
+		<div class="dropdown">
+			<button class="dropbtn" id='view' style='display:none'>View
+				<i class="fa fa-caret-down"></i>
+			</button>
+			<div class="dropdown-content">
+				<a href='#' onclick='linePlot();'>Line</a>
+				<a href='#' onclick='piePlot();'>Pie</a>
+				<a href='#' onclick='barPlot();'>Bar</a>
+				<a href='#' onclick='histPlot();'>Histogram</a>
+				<a href='#' onclick='newPlots();'>New Plots</a>
+				<a href='#' onclick='showAnalytics();'>Analytics</a>
+			</div>
+		</div>
+		<!--Settings Dropdown-->
+		<div class="dropdown" id=settings style='display:none'>
+			<button class="dropbtn">Settings
+				<i class="fa fa-caret-down"></i>
+			</button>
+			<div class="dropdown-content">
+				<a href='#' onclick='usrInfo()'>User Info</a>
+				<a href='#' onclick='saveSettings()' class="save" style="display:none">Save Settings</a>
+				<a href='#' onclick='saveResults()'  class="save" style="display:none">Save Filtered Results</a>
+			</div>
+		</div>
+		<!--Help Dropdown-->
+		<div class="dropdown">
+			<button class="dropbtn">Help
+				<i class="fa fa-caret-down"></i>
+			</button>
+			<div class="dropdown-content">
+				<a href='#' onclick='info()'>Info</a>
+				<a href='#' onclick='clientInfo()'>Client</a>
+				<a href='./coviddatasets.zip' >Download Datasets</a>
+				<a href='../project2proposal.pdf' target="_BLANK" >User Manual</a>
+			</div>
+		</div>
+		<div class="fileresult">
+			<h3 align="center" id="resultmessage"></h3>
+		</div>
+	</div>
+
+	<!--Main Page Sections-->
+	<div class="maindiv">
+		<div class="leftdiv" id='radiodiv'>
+			<span id='showleft' style='display:none'>
+			<h4>How to plot your spreadsheet:</h4>
+			<ol>
+				<li>Select one of the options below.</li>
+				<li>Hover your mouse over the 'View' option on the navigation bar.</li>
+				<li>Pick a chart that corresponds to the predetermined options given next to the names of the charts in this section.</li>
+			</ol>
+			NOTE: Empty, NaN, and NULL values will <font color='red'><b><u>NOT</u></b></font> be included in the outputted charts.<br><br>
+			<h4>Options:</h4>
+			<form id='plotform'>
+				Total Deaths(Bar,Line)<br><input type='radio' id="D" value='D[Bar,Line]' onclick='displayPlots()' checked name='charttype'><br><br><br>	
+				Total Cases(Bar,Line)<br><input type='radio'  id = "C" value='C[Bar,Line]' onclick='displayPlots()' name='charttype'><br><br><br>	
+				State(Pie,Histogram)<br><input type='radio'  id = "S" value='S[Pie,Histogram]' onclick='displayPlots()' name='charttype'><br>
+				<span id="sliderPrompt"  style="display:none">
+					   Positive<br><input id="posAvg" max=1 min=0 type='range' oninput="this.nextElementSibling.value=this.value" onchange="updatePlot();">
+					   <output id="posSliderVal"></output><br>
+					   Deaths<br><input id="deathAvg" max=1 min=0 type='range' oninput="this.nextElementSibling.value=this.value" onchange="updatePlot()"> 
+					   <output id="deathSliderVal"></output><br>
+				</span>
+				If you intend to plot a map/pie/histogram chart, pick date from your data you'd to see plotted.<br>
+				<input type='date' value='2020-01-01', name='date',min='2020-01-01'><br>
+				<small><b><i>Note: If the date selected is not found in the table, the next available date will be plotted. Dates spanning from 1/1/2020-3/30/2020 will not work on the pie chart, and dates spanning 1/1/2020-2/10/2020 will not work on the map plot, due to the lack of covid data at the start of the pandemic.</i></b></small>
+			</form>
+			</span>
+		</div>
+
+		<div class="rightdiv">
+			<div class="upperright" id='plotdiv'>
+					<div id='pd1'></div>
+					<div id='pd2'></div>
+			</div>
+			<div class="bottomright" id = "tbl">
+			<script type='text/javascript' id=ggltbl></script>
+			</div>
+			
+
+			<!--Popup login form-->
+			<div class='form-popup' id='myForm' style="display:none">
+			<form class='form-container' onsubmit='checkLogin();return false' method='post'>
+				<h1>Login</h1>
+				<label for="username"><b>Username:</b></label>
+				<input type="text" placeholder="Enter Username" id="username" required>
+
+				<label for="password"><b>Password:</b></label>
+				<input type="password" placeholder="Enter Password" id="password"  required>
+
+				<button type="submit" class="btn">Login</button>
+				<button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+			</form>
+			<!--Script tags for dynamically inserted JS code by AJAX-->
+			<script type='text/javascript' id='delnav'></script>
+			<script type='text/javascript' id='addnav'></script>
+			</div>
+
+			<!--Popup login form-->
+			<div class='form-popup' id='mailForm' style="display:none">
+			<form class='form-container' onsubmit='sendMail();return false' method='post'>
+				<h1>Mail Preferences</h1>
+				<label for="Receiver"><b>Receiver:</b></label>
+				<input  type="email" placeholder="Enter Receiver E-Mail:" id="Receiver" required>
+
+				<label for="subject"><b>Subject:</b></label>
+				<input disabled type="text" id="subject"  value="Hello" required>
+				<textarea disabled id="emailcontent" cols=40 rows=5></textarea>
+				<button type="submit" class="btn">Send</button>
+				<button type="button" class="btn cancel" onclick="closeMailForm()">Close</button>
+			</form>
+			</div>
+			<!--Popup login form-->
+			<div class='popup' id='analytics' style="display:none">
+				<div class='popup-closer'> <i class="fa fa-close" onclick="closeAnalytics();"></i></div>
+			
+			</div>
+		</div>
+	</div>
+
+    </body>
+
+    
+   
+</html>
